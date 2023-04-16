@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            padding: 0;
+            margin: 0;
+        }
+
+        .parent {
+            width: 200px;
+            height: 98vh;
+            overflow: auto;
+            border-right: 1px solid #d3d3d3;
+            padding-top: 16px;
+        }
+
+        .children {
+            margin-left: 16px;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .children_name {
+            padding: 0 8px;
+            width: 100%;
+            display: block;
+        }
+
+        .children_name:hover {
+            background-color: #9a9af8;
+        }
+
+        .children.child_hidden>.children {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="parent" onclick="handleTreeClick(event)"></div>
+    <template class="folder_template">
+        <div class="children"><span class="children_name">Folder</span></div>
+    </template>
+    <template class="file_template">
+        <div class="children"><span class="children_name">File</span></div>
+    </template>
+    <script src="dummy.js"></script>
+</body>
+
+</html>

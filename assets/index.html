@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="note-taker-container">
+        <div class="left-section" onclick="handleTreeClick(event)"></div>
+        <template class="folder_template">
+            <div class="children"><span class="children_name">Folder</span></div>
+        </template>
+        <template class="file_template">
+            <div class="children"><span class="children_name">File</span></div>
+        </template>
+
+        <div class="middle-section">
+            <input class="title" placeholder="Untitled">
+            <textarea class="editor" oninput="handleEditorInput(event)"></textarea>
+        </div>
+
+        <div class="right-section">
+            <div class="editor-preview"></div>
+            <button class="save-btn" onclick="saveCurrentDocument()">Save</button>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/markdown-it/13.0.1/markdown-it.min.js" integrity="sha512-SYfDUYPg5xspsG6OOpXU366G8SZsdHOhqk/icdrYJ2E/WKZxPxze7d2HD3AyXpT7U22PZ5y74xRpqZ6A2bJ+kQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="sidebar.js"></script>
+</body>
+
+</html>
