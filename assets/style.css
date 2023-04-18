@@ -13,6 +13,31 @@ body {
   display: flex;
   height: 100vh;
 }
+
+.left-section-container {
+  width: 100%;
+  max-width: 240px;
+}
+
+.sidebar-ctrls {
+  display: flex;
+  padding: 16px;
+}
+
+.sidebar-ctrls > div {
+  margin-right: 16px;
+}
+
+.sidebar-ctrls > div > img {
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+}
+
+.sidebar-ctrls > div > img:active {
+  transform: scale(0.9);
+}
+
 .left-section {
   width: 100%;
   max-width: 240px;
@@ -20,7 +45,7 @@ body {
   overflow: auto;
   border: 1px solid #d3d3d3;
   padding-top: 16px;
-  margin: 2rem 0;
+  margin: 2rem 0 0;
 }
 
 .children {
@@ -35,8 +60,12 @@ body {
   display: block;
 }
 
+.children.active_tree_elm {
+  background: #d6d6ff;
+}
+
 .children_name:hover {
-  background-color: #9a9af8;
+  background-color: #d6d6ff;
 }
 
 .children.child_hidden > .children {
@@ -45,6 +74,7 @@ body {
 
 .middle-section {
   width: 100%;
+  min-width: 320px;
   margin-left: -1px;
 }
 
@@ -68,7 +98,7 @@ body {
 
 .save-btn {
   display: block;
-  background-color: #9a9af8;
+  background-color: #525252;
   padding: 8px 16px;
   border-radius: 4px;
   border: none;
@@ -80,12 +110,13 @@ body {
   color: white;
 }
 
-.save-btn:active{
-  background-color: #bfbffb;
+.save-btn:active {
+  transform: scale(0.9);
 }
 
 .right-section {
   width: 100%;
+  min-width: 320px;
   height: 100%;
   margin-left: -1px;
 }
@@ -97,4 +128,12 @@ body {
   max-height: 90vh;
   padding: 8px;
   overflow: auto;
+}
+
+.new-tree-elm-placeholder {
+  width: 100%;
+  max-width: 240px;
+
+  position: relative;
+  left: 1rem;
 }

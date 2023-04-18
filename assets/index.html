@@ -11,9 +11,17 @@
 
 <body>
     <div class="note-taker-container">
-        <div class="left-section" onclick="handleTreeClick(event)"></div>
+        <div class="left-section-container">
+            <div class="left-section" onclick="handleTreeClick(event)"></div>
+            <div class="sidebar-ctrls">
+                <div><img src="file-plus-fill.svg" onclick="createNewDocument()"></div>
+                <div><img src="folder-simple-plus-fill.svg" alt=""></div>
+                <div><img src="arrow-clockwise-fill.svg" alt=""></div>
+                <div><img src="arrows-in-simple-fill.svg" alt=""></div>
+            </div>
+        </div>
         <template class="folder_template">
-            <div class="children"><span class="children_name">Folder</span></div>
+            <div class="children folder"><span class="children_name">Folder</span></div>
         </template>
         <template class="file_template">
             <div class="children"><span class="children_name">File</span></div>
@@ -30,7 +38,9 @@
         </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/markdown-it/13.0.1/markdown-it.min.js" integrity="sha512-SYfDUYPg5xspsG6OOpXU366G8SZsdHOhqk/icdrYJ2E/WKZxPxze7d2HD3AyXpT7U22PZ5y74xRpqZ6A2bJ+kQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/markdown-it/13.0.1/markdown-it.min.js"
+        integrity="sha512-SYfDUYPg5xspsG6OOpXU366G8SZsdHOhqk/icdrYJ2E/WKZxPxze7d2HD3AyXpT7U22PZ5y74xRpqZ6A2bJ+kQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="sidebar.js"></script>
 </body>
 

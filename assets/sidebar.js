@@ -6,9 +6,15 @@ let fileTemplate = document.querySelector(".file_template");
 let editor = document.querySelector(".editor");
 let title = document.querySelector(".title");
 let editorPreview = document.querySelector(".editor-preview");
+let titlePlaceholder = createTitlePlaceholder();
 let currentDocPath = "";
 let isCurrentDocPrestine = true;
 let currentDocData = "";
+let parentDirPath;
+let focusedTreeElm = {
+  elementHandle: null,
+  type: "",
+};
 
 (async () => {
   dirStruct = await getVaultStucture();
@@ -66,6 +72,8 @@ async function handleTreeClick(e) {
     return;
   }
 
+  focusCurrentTreeElm(childTarget);
+
   // collapse, uncollapse logic for directories on click
   if (childTarget.getAttribute("data-type") === "directory") {
     const isExpanded = childTarget.getAttribute("data-expanded");
@@ -78,7 +86,7 @@ async function handleTreeClick(e) {
     }
   } else {
     const docId = childTarget.getAttribute("data-id");
-    const docPath = await getDirectoryPath(docId);
+    const docPath = await getTreeElementPath(docId);
     const payload = {
       docPath,
     };
@@ -113,11 +121,12 @@ async function handleTreeClick(e) {
     }
 
     currentDocPath = docPath;
+
     renderMarkdown();
   }
 }
 
-function getDirectoryPath(id) {
+function getTreeElementPath(id) {
   return docIdPathMap.find((_) => _.id === id).path;
 }
 
@@ -126,6 +135,10 @@ function handleEditorInput(event) {
 }
 
 function saveCurrentDocument() {
+  if (editor.value === "" || currentDocPath === "") {
+    return;
+  }
+
   fetch("/save", {
     method: "POST",
     headers: {
@@ -146,4 +159,124 @@ function renderMarkdown() {
   console.log("markdownText :>> ", markdownText);
   const html = md.render(markdownText);
   editorPreview.innerHTML = html;
+}
+
+function createNewDocument(e) {
+  // reset title
+  title.value = "";
+
+  // reset titlePlaceholder
+  titlePlaceholder.value = "";
+
+  // decide where to make new doc
+  const elmId = focusedTreeElm.elementHandle.getAttribute("data-id");
+
+  if (focusedTreeElm.type === "directory") {
+    parentDirPath = getTreeElementPath(elmId);
+    const parentElm = focusedTreeElm.elementHandle;
+    console.log(parentElm, "parent elem");
+    parentElm.insertBefore(titlePlaceholder, parentElm.children[1]);
+  } else {
+    const parentId = focusedTreeElm.elementHandle
+      .closest(".folder")
+      .getAttribute("data-id");
+    parentDirPath = getTreeElementPath(parentId);
+    const focusedElm = focusedTreeElm.elementHandle;
+    focusedElm.insertAdjacentElement("afterend", titlePlaceholder);
+  }
+  titlePlaceholder.focus();
+  titlePlaceholder.addEventListener("blur", titlePlaceholderUnfocusListener);
+  titlePlaceholder.addEventListener("keypress", titlePlaceholderEnterListener);
+  // api create new doc, recieve new tree stucture
+  // render new tree view
+}
+
+function focusCurrentTreeElm(fileHTMLElement) {
+  // remove previous elm's bg color
+  parent.querySelector(".active_tree_elm")?.classList.remove("active_tree_elm");
+
+  // add bg color to the new current doc
+  fileHTMLElement.classList.add("active_tree_elm");
+
+  // set focused element's type
+  focusedTreeElm.type = fileHTMLElement.getAttribute("data-type");
+  focusedTreeElm.elementHandle = fileHTMLElement;
+}
+
+function createTitlePlaceholder() {
+  const inputElement = document.createElement("input");
+  inputElement.type = "text";
+  inputElement.classList.add("new-tree-elm-placeholder");
+  return inputElement;
+}
+
+function focusOnNewlyCreatedElm(newElmId) {
+  console.log("newElmId :>> ", newElmId);
+  const newlyCreateElm = document.querySelector(`[data-id="${newElmId}"]`);
+  console.log("newlyCreateElm", newlyCreateElm);
+
+  newlyCreateElm.classList.add("active_tree_elm");
+  focusedTreeElm.type = newlyCreateElm.getAttribute("data-type");
+  focusedTreeElm.elementHandle = newlyCreateElm;
+}
+
+function removeTitlePlaceholder() {
+  titlePlaceholder.removeEventListener(
+    "keypress",
+    titlePlaceholderEnterListener
+  );
+  titlePlaceholder.removeEventListener("blur", titlePlaceholderUnfocusListener);
+
+  titlePlaceholder.remove();
+}
+
+// event handlers
+
+function titlePlaceholderEnterListener(event) {
+  if (event.key === "Enter") {
+    handleCreate();
+  }
+}
+
+function titlePlaceholderUnfocusListener(event) {
+  handleCreate();
+}
+
+// api
+
+function handleCreate() {
+  const payload = {
+    parentDirPath,
+    type: "file",
+    title: titlePlaceholder.value,
+  };
+
+  if (!payload.parentDirPath || !payload.type || !payload.title) {
+    console.log("Please provide a title, type, parent directory path.");
+    removeTitlePlaceholder();
+    return;
+  }
+
+  try {
+    fetch("/create", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log("data", data);
+        const dirStruct = data.dirStruct;
+        // remove input of new elm listeners
+        removeTitlePlaceholder();
+        parent.innerHTML = "";
+        generateTreeView(parent, dirStruct);
+        focusOnNewlyCreatedElm(data.newElmId);
+      });
+  } catch (error) {
+    console.log("[Error]: ", error?.message);
+    removeTitlePlaceholder();
+  }
 }

@@ -15,18 +15,35 @@ app.get("/", (req, res) => {
 });
 
 app.get("/getDirStruct", (req, res) => {
-  const rootDir = process.cwd();
-  const vault = path.join(rootDir, "vault");
-  const dirStruct = JSON.stringify(getDirectoryStructure(vault));
-
+  const dirStruct = JSON.stringify(getDirectoryStructure());
   res.json(dirStruct);
 });
 
 app.post("/readDocDataOnFileClick", (req, res) => {
   const docPath = req.body.docPath;
-  const docData = fs.readFileSync(docPath, 'utf8');
+  const docData = fs.readFileSync(docPath, "utf8");
   const title = path.basename(docPath, path.extname(docPath));
-  res.json({title, docData});
+  res.json({ title, docData });
+});
+
+app.post("/create", (req, res) => {
+  const type = req.body.type;
+  const parentDirPath = req.body.parentDirPath;
+  const title = req.body.title;
+
+  if (type === "directory") {
+    const dirPath = path.join(parentDirPath, title);
+    if (!fs.existsSync(dirPath)) {
+      fs.mkdirSync(dirPath, { recursive: true });
+    }
+  } else {
+    const filePath = path.join(parentDirPath, title);
+    fs.writeFileSync(filePath, "");
+  }
+  const newElmId = uuidv4();
+  const elmPath = path.join(parentDirPath, title);
+  const dirStruct = getDirectoryStructure(undefined, newElmId, elmPath);
+  res.json({dirStruct, newElmId});
 });
 
 app.post("/save", (req, res) => {
