@@ -60,7 +60,7 @@ body {
   display: block;
 }
 
-.children.active_tree_elm {
+.children.active_tree_elm > span {
   background: #d6d6ff;
 }
 
