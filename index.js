@@ -19,6 +19,10 @@ app.get("/getDirStruct", (req, res) => {
   res.json(dirStruct);
 });
 
+app.get("/getBaseDirPath", (req, res) => {
+  res.send(path.join(__dirname, 'vault'));
+});
+
 app.post("/readDocDataOnFileClick", (req, res) => {
   const docPath = req.body.docPath;
   const docData = fs.readFileSync(docPath, "utf8");

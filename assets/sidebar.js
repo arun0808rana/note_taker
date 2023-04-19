@@ -15,9 +15,11 @@ let focusedTreeElm = {
   elementHandle: null,
   type: "",
 };
+let baseDirPath = "";
 
 (async () => {
   dirStruct = await getVaultStucture();
+  baseDirPath = await getBaseDirPath();
   await generateTreeView(parent, dirStruct);
 })();
 
@@ -76,6 +78,7 @@ async function handleTreeClick(e) {
 
   // collapse, uncollapse logic for directories on click
   if (childTarget.getAttribute("data-type") === "directory") {
+    uncollapseSubTree(childTarget);
     const isExpanded = childTarget.getAttribute("data-expanded");
     if (isExpanded === "true") {
       childTarget.classList.add("child_hidden");
@@ -127,11 +130,16 @@ async function handleTreeClick(e) {
 }
 
 function getTreeElementPath(id) {
+  if (!id) {
+    console.log("baseDirPath :>> ", baseDirPath);
+    return baseDirPath;
+  }
   return docIdPathMap.find((_) => _.id === id).path;
 }
 
 function handleEditorInput(event) {
   isCurrentDocPrestine = false;
+  renderMarkdown();
 }
 
 function saveCurrentDocument() {
@@ -156,19 +164,13 @@ function saveCurrentDocument() {
 function renderMarkdown() {
   const md = new markdownit();
   const markdownText = editor.value;
-  console.log("markdownText :>> ", markdownText);
   const html = md.render(markdownText);
   editorPreview.innerHTML = html;
 }
 
 function createNewDocument(e) {
-  // reset title
-  title.value = "";
-
   // reset titlePlaceholder
   titlePlaceholder.value = "";
-
-  // decide where to make new doc
   const elmId = focusedTreeElm.elementHandle.getAttribute("data-id");
 
   if (focusedTreeElm.type === "directory") {
@@ -187,8 +189,6 @@ function createNewDocument(e) {
   titlePlaceholder.focus();
   titlePlaceholder.addEventListener("blur", titlePlaceholderUnfocusListener);
   titlePlaceholder.addEventListener("keypress", titlePlaceholderEnterListener);
-  // api create new doc, recieve new tree stucture
-  // render new tree view
 }
 
 function focusCurrentTreeElm(fileHTMLElement) {
@@ -211,10 +211,7 @@ function createTitlePlaceholder() {
 }
 
 function focusOnNewlyCreatedElm(newElmId) {
-  console.log("newElmId :>> ", newElmId);
   const newlyCreateElm = document.querySelector(`[data-id="${newElmId}"]`);
-  console.log("newlyCreateElm", newlyCreateElm);
-
   newlyCreateElm.classList.add("active_tree_elm");
   focusedTreeElm.type = newlyCreateElm.getAttribute("data-type");
   focusedTreeElm.elementHandle = newlyCreateElm;
@@ -226,10 +223,18 @@ function removeTitlePlaceholder() {
     titlePlaceholderEnterListener
   );
   titlePlaceholder.removeEventListener("blur", titlePlaceholderUnfocusListener);
-
   titlePlaceholder.remove();
 }
 
+function collapseTree() {
+  parent.classList.toggle("collapse");
+}
+
+function uncollapseSubTree(childTarget) {
+  childTarget.querySelectorAll(".children").forEach((elm) => {
+    elm.classList.toggle("collapse_child");
+  });
+}
 // event handlers
 
 function titlePlaceholderEnterListener(event) {
@@ -274,9 +279,18 @@ function handleCreate() {
         parent.innerHTML = "";
         generateTreeView(parent, dirStruct);
         focusOnNewlyCreatedElm(data.newElmId);
+        editor.value = "";
+        editorPreview.innerHTML = "";
+        title.value = focusedTreeElm.elementHandle.innerText;
       });
   } catch (error) {
     console.log("[Error]: ", error?.message);
     removeTitlePlaceholder();
   }
+}
+
+async function getBaseDirPath() {
+  const path = (await fetch("/getBaseDirPath")).text();
+  parentDirPath = path;
+  return path;
 }

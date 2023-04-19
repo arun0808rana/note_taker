@@ -12,12 +12,12 @@
 <body>
     <div class="note-taker-container">
         <div class="left-section-container">
-            <div class="left-section" onclick="handleTreeClick(event)"></div>
+            <div class="left-section folder" onclick="handleTreeClick(event)"></div>
             <div class="sidebar-ctrls">
                 <div><img src="file-plus-fill.svg" onclick="createNewDocument()"></div>
                 <div><img src="folder-simple-plus-fill.svg" alt=""></div>
                 <div><img src="arrow-clockwise-fill.svg" alt=""></div>
-                <div><img src="arrows-in-simple-fill.svg" alt=""></div>
+                <div><img src="arrows-in-simple-fill.svg" onclick="collapseTree()"></div>
             </div>
         </div>
         <template class="folder_template">

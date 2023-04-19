@@ -46,6 +46,15 @@ body {
   border: 1px solid #d3d3d3;
   padding-top: 16px;
   margin: 2rem 0 0;
+  user-select: none;
+}
+
+.left-section.collapse > .children > .children{
+  display: none;
+}
+
+.collapse_child.children{
+  display: none;
 }
 
 .children {
@@ -69,7 +78,7 @@ body {
 }
 
 .children.child_hidden > .children {
-  display: none;
+  /* display: none; */
 }
 
 .middle-section {
@@ -94,6 +103,7 @@ body {
   border: 1px solid #d3d3d3;
   padding: 8px;
   resize: none;
+  font-size: 1rem;
 }
 
 .save-btn {
@@ -105,8 +115,8 @@ body {
   font-size: 1rem;
   cursor: pointer;
   margin-left: auto;
-  margin-top: 8px;
-  margin-right: 8px;
+  margin-top: 16px;
+  margin-right: 16px;
   color: white;
 }
 
@@ -136,4 +146,23 @@ body {
 
   position: relative;
   left: 1rem;
+}
+
+
+/* width */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+  border-radius: 4px;
+}
+ 
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #d3d3d3; 
+  border-radius: 8px;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #525252; 
 }
