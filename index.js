@@ -37,10 +37,8 @@ app.post("/contexMenuAction", (req, res) => {
   const renamePath = req.body.renamePath || null;
   const renamedName = req.body.renamedName || null;
 
-
   switch (actionType) {
     case "RENAME":
-
       if (!renamedName) {
         throw new Error("Please provide a new renaming name.");
       }
@@ -55,12 +53,16 @@ app.post("/contexMenuAction", (req, res) => {
           throw new Error("Invalid element name.");
         }
 
-        fs.rename(renamePath, path.join(path.dirname(renamePath), renamedName), (err) => {
-          if (err) throw err;
-          const dirStruct = getDirectoryStructure();
+        fs.rename(
+          renamePath,
+          path.join(path.dirname(renamePath), renamedName),
+          (err) => {
+            if (err) throw err;
+            const dirStruct = getDirectoryStructure();
 
-          res.json({ success: true, dirStruct });
-        });
+            res.json({ success: true, dirStruct });
+          }
+        );
       } catch (error) {
         const dirStruct = getDirectoryStructure();
         res.json({ success: false, dirStruct, reason: error?.message });
@@ -69,7 +71,7 @@ app.post("/contexMenuAction", (req, res) => {
 
     default:
       const dirStruct = getDirectoryStructure();
-      res.json({ success: false, dirStruct, reason: 'INVALID Action Type.' });
+      res.json({ success: false, dirStruct, reason: "INVALID Action Type." });
       break;
   }
 });
@@ -111,7 +113,9 @@ app.post("/save", (req, res) => {
 
 const port = 5000;
 
-app.listen(port, () => {
+app.listen(port, async () => {
+  const open = await import('open');
+  await open.default(`http://localhost:${port}`);
   console.log(`Server running on port ${port}`);
 });
 
