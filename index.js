@@ -20,13 +20,43 @@ app.get("/getDirStruct", (req, res) => {
 });
 
 app.get("/getBaseDirPath", (req, res) => {
-  res.send(path.join(__dirname, 'vault'));
+  res.send(path.join(__dirname, "vault"));
 });
 
 app.post("/readDocDataOnFileClick", (req, res) => {
   const docPath = req.body.docPath;
   const docData = fs.readFileSync(docPath, "utf8");
   const title = path.basename(docPath, path.extname(docPath));
+  res.json({ title, docData });
+});
+
+app.post("/contexMenuAction", (req, res) => {
+  const actionType = req.body.type;
+  const copyPath = req.body.copyPath || null;
+  const pastePath = req.body.pastePath || null;
+  const renamePath = req.body.renamePath || null;
+  const renamedName = req.body.renamedName || null;
+  
+  switch (actionType) {
+    case "RENAME":
+      if(!renamedName){
+        res.json({ success: false, reason: 'Please provide a new renaming name.' });
+      }
+      try {
+        if(!renamePath){
+          res.json({success: false, reason: 'Please provide a rename target element.'});
+        }
+        fs.rename(renamePath, path.join(renamePath, renamedName), (err) => {
+          if (err) throw err;
+        });
+      } catch (error) {
+        res.json({ success: false, reason: error?.message });
+      }
+      break;
+
+    default:
+      break;
+  }
   res.json({ title, docData });
 });
 
@@ -47,7 +77,7 @@ app.post("/create", (req, res) => {
   const newElmId = uuidv4();
   const elmPath = path.join(parentDirPath, title);
   const dirStruct = getDirectoryStructure(undefined, newElmId, elmPath);
-  res.json({dirStruct, newElmId});
+  res.json({ dirStruct, newElmId });
 });
 
 app.post("/save", (req, res) => {

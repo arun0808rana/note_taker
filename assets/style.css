@@ -1,5 +1,9 @@
+@import url('https://fonts.googleapis.com/css2?family=Ubuntu&display=swap');
+
 * {
   box-sizing: border-box;
+  font-family: 'Ubuntu', sans-serif;
+  font-size: 14px;
 }
 
 html,
@@ -16,7 +20,7 @@ body {
 
 .left-section-container {
   width: 100%;
-  max-width: 240px;
+  max-width: 280px;
 }
 
 .sidebar-ctrls {
@@ -40,7 +44,7 @@ body {
 
 .left-section {
   width: 100%;
-  max-width: 240px;
+  max-width: 280px;
   height: 90vh;
   overflow: auto;
   border: 1px solid #d3d3d3;
@@ -49,24 +53,40 @@ body {
   user-select: none;
 }
 
-.left-section.collapse > .children > .children{
+/* .left-section.collapse > .children > .children{
   display: none;
 }
 
-.collapse_child.children{
+.left-section.collapse .active_tree_elm > .children.collapse_child{
   display: none;
 }
+
+.left-section.collapse .active_tree_elm > .children{
+  display: block;
+} */
 
 .children {
   margin-left: 16px;
   cursor: pointer;
   width: 100%;
+  position: relative;
 }
 
 .children_name {
   padding: 0 8px;
   width: 100%;
-  display: block;
+  display: flex;
+  align-items: center;
+}
+
+.elm-icons {
+  width: 20px;
+  height: 20px;
+  margin-right: 4px;
+}
+
+.elm-name{
+  width: 100%;
 }
 
 .children.active_tree_elm > span {
@@ -77,8 +97,25 @@ body {
   background-color: #d6d6ff;
 }
 
-.children.child_hidden > .children {
-  /* display: none; */
+.context-menu {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 2;
+  background: white;
+  width: 100%;
+  max-width: 160px;
+  border: 1px solid #d3d3d3;
+  box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.2);
+}
+
+.menu-item {
+  padding: 8px 24px;
+  border-bottom: 1px solid #d3d3d3;
+}
+
+.menu-item:hover{
+  background: #d6d6ff;
 }
 
 .middle-section {
@@ -142,12 +179,11 @@ body {
 
 .new-tree-elm-placeholder {
   width: 100%;
-  max-width: 240px;
+  max-width: 280px;
 
   position: relative;
   left: 1rem;
 }
-
 
 /* width */
 ::-webkit-scrollbar {
@@ -155,14 +191,14 @@ body {
   height: 8px;
   border-radius: 4px;
 }
- 
+
 /* Handle */
 ::-webkit-scrollbar-thumb {
-  background: #d3d3d3; 
+  background: #d3d3d3;
   border-radius: 8px;
 }
 
 /* Handle on hover */
 ::-webkit-scrollbar-thumb:hover {
-  background: #525252; 
+  background: #525252;
 }
