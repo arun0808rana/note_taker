@@ -202,9 +202,16 @@ function getFocusedElmPath() {
 
 function renameListener(event) {
   if (event.key === "Enter") {
-    console.log("Pressed enter");
     event.preventDefault();
-    // todo : sanitize dir/file name before renaming
+    const path = getFocusedElmPath();
+    const renamedName =
+      focusedTreeElm.elementHandle.querySelector(".elm-name").innerText;
+    const payload = {
+      actionType: "RENAME",
+      renamePath: path,
+      renamedName,
+    };
+    fetchContexMenuAction(payload);
     const elmHandle = focusedTreeElm.elementHandle.querySelector(".elm-name");
     elmHandle.setAttribute("contentEditable", "false");
     elmHandle.removeEventListener("keypress", renameListener);
@@ -246,10 +253,6 @@ function handleConextMenu(event) {
   const target = event.target.closest(".menu-item");
   menuHandle.remove();
   const actionType = target.innerText.trim().toUpperCase();
-  console.log("actionType :>> ", actionType);
-  let payload = {
-    actionType,
-  };
 
   switch (actionType) {
     case "RENAME":
@@ -259,9 +262,10 @@ function handleConextMenu(event) {
       // put cursor at end of tree element's name
       const range = document.createRange();
       const sel = window.getSelection();
+      const cursorEndPos = focusedTreeElm.type === 'directory' ? elmNameHandle.textContent.length : elmNameHandle.textContent.split('.')[0].length;
       range.setStart(
         elmNameHandle.childNodes[0],
-        elmNameHandle.textContent.length
+        cursorEndPos
       );
       range.collapse(true);
       sel.removeAllRanges();
@@ -289,6 +293,30 @@ function handleConextMenu(event) {
 }
 
 //******************** api ************************
+
+async function fetchContexMenuAction(payload) {
+  try {
+    fetch("/contexMenuAction", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        console.log("data :>> ", data);
+      });
+  } catch (error) {
+    console.log("error renaming element: ", error?.message);
+  } finally {
+    const dirStruct = await getVaultStucture();
+    console.log('dirStruct :>> ', dirStruct);
+    parent.innerHTML = '',
+    generateTreeView(parent, dirStruct);
+    // arun--
+  }
+}
 
 function saveCurrentDocument() {
   if (editor.value === "" || currentDocPath === "") {
@@ -332,7 +360,6 @@ function handleCreate() {
     })
       .then((response) => response.json())
       .then((data) => {
-        console.log("data", data);
         const dirStruct = data.dirStruct;
         // remove input of new elm listeners
         removeTitlePlaceholder();
@@ -386,8 +413,6 @@ async function getVaultStucture() {
     try {
       const response = await fetch("/getDirStruct");
       let dirStruct = await response.json();
-      dirStruct = await JSON.parse(dirStruct);
-      // console.log("dirStruct :>> ", dirStruct);
       resolve(dirStruct);
     } catch (error) {
       console.error(`Download error: ${error.message}`);

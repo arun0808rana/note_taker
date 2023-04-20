@@ -15,7 +15,7 @@ app.get("/", (req, res) => {
 });
 
 app.get("/getDirStruct", (req, res) => {
-  const dirStruct = JSON.stringify(getDirectoryStructure());
+  const dirStruct = getDirectoryStructure();
   res.json(dirStruct);
 });
 
@@ -31,33 +31,47 @@ app.post("/readDocDataOnFileClick", (req, res) => {
 });
 
 app.post("/contexMenuAction", (req, res) => {
-  const actionType = req.body.type;
+  const actionType = req.body.actionType;
   const copyPath = req.body.copyPath || null;
   const pastePath = req.body.pastePath || null;
   const renamePath = req.body.renamePath || null;
   const renamedName = req.body.renamedName || null;
-  
+
+
   switch (actionType) {
     case "RENAME":
-      if(!renamedName){
-        res.json({ success: false, reason: 'Please provide a new renaming name.' });
+
+      if (!renamedName) {
+        throw new Error("Please provide a new renaming name.");
       }
+
       try {
-        if(!renamePath){
-          res.json({success: false, reason: 'Please provide a rename target element.'});
+        if (!renamePath) {
+          throw new Error("Please provide a rename target element.");
         }
-        fs.rename(renamePath, path.join(renamePath, renamedName), (err) => {
+
+        const isNameValid = isValidTreeElmName(renamedName);
+        if (!isNameValid) {
+          throw new Error("Invalid element name.");
+        }
+
+        fs.rename(renamePath, path.join(path.dirname(renamePath), renamedName), (err) => {
           if (err) throw err;
+          const dirStruct = getDirectoryStructure();
+
+          res.json({ success: true, dirStruct });
         });
       } catch (error) {
-        res.json({ success: false, reason: error?.message });
+        const dirStruct = getDirectoryStructure();
+        res.json({ success: false, dirStruct, reason: error?.message });
       }
       break;
 
     default:
+      const dirStruct = getDirectoryStructure();
+      res.json({ success: false, dirStruct, reason: 'INVALID Action Type.' });
       break;
   }
-  res.json({ title, docData });
 });
 
 app.post("/create", (req, res) => {
@@ -100,3 +114,35 @@ const port = 5000;
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });
+
+function isValidTreeElmName(name) {
+  const isWindows = process.platform === "win32";
+  const isMac = process.platform === "darwin";
+  const isLinux = process.platform === "linux";
+
+  if (isWindows) {
+    const reservedChars = /[<>:"/\\|?*\x00-\x1F]/g;
+    const reservedNames = /^(con|prn|aux|nul|com\d|lpt\d)$/i;
+    const maxLength = 260;
+    const endsWithPeriodOrSpace = /[. ]$|^ $/;
+    return (
+      !reservedChars.test(name) &&
+      !reservedNames.test(name) &&
+      name.length <= maxLength &&
+      !endsWithPeriodOrSpace.test(name)
+    );
+  }
+
+  if (isMac || isLinux) {
+    const invalidChars = /[^\w\s-]/g;
+    const maxLength = 255;
+    const endsWithSpace = /^.*\s$/;
+    return (
+      !invalidChars.test(name) &&
+      name.length <= maxLength &&
+      !endsWithSpace.test(name)
+    );
+  }
+
+  return true; // assume name is valid for other operating systems
+}
