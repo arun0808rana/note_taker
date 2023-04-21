@@ -22,8 +22,8 @@ let newElementCreationType = "";
 let copiedPath = "";
 
 (async () => {
-  dirStruct = await getVaultStucture();
-  baseDirPath = await getBaseDirPath();
+  dirStruct = await getVaultStuctureApi();
+  baseDirPath = await getBaseDirPathApi();
   await generateTreeView(parent, dirStruct);
   document.addEventListener("contextmenu", contextMenuListener);
 })();
@@ -85,7 +85,7 @@ function focusCurrentTreeElm(fileHTMLElement) {
     const payload = {
       docPath,
     };
-    fetchReadDocDataOnFileClick(payload);
+    fetchReadDocDataOnFileClickApi(payload);
   }
 }
 
@@ -116,6 +116,12 @@ function uncollapseSubTree(childTarget) {
   childTarget.querySelectorAll(".children").forEach((elm) => {
     elm.classList.toggle("collapse_child");
   });
+}
+
+async function reRender() {
+  const dirStruct = await getVaultStuctureApi();
+  parent.innerHTML = "";
+  generateTreeView(parent, dirStruct);
 }
 
 //  ******************indirect event handlers************
@@ -183,13 +189,13 @@ async function handleTreeClick(e) {
     if (!isCurrentDocPrestine) {
       const answer = confirm("Do you want save the document?");
       if (answer) {
-        saveCurrentDocument();
+        saveCurrentDocumentApi();
       } else {
         isCurrentDocPrestine = true;
       }
     }
 
-    // fetchReadDocDataOnFileClick(payload);
+    // fetchReadDocDataOnFileClickApi(payload);
   }
 }
 
@@ -211,7 +217,7 @@ function renameListener(event) {
       renamePath: path,
       renamedName,
     };
-    fetchContexMenuAction(payload);
+    renameFocusedElementApi(payload);
     const elmHandle = focusedTreeElm.elementHandle.querySelector(".elm-name");
     elmHandle.setAttribute("contentEditable", "false");
     elmHandle.removeEventListener("keypress", renameListener);
@@ -220,12 +226,12 @@ function renameListener(event) {
 
 function titlePlaceholderEnterListener(event) {
   if (event.key === "Enter") {
-    handleCreate();
+    handleCreateApi();
   }
 }
 
 function titlePlaceholderUnfocusListener(event) {
-  handleCreate();
+  handleCreateApi();
 }
 
 function contextMenuListener(event) {
@@ -262,11 +268,11 @@ function handleConextMenu(event) {
       // put cursor at end of tree element's name
       const range = document.createRange();
       const sel = window.getSelection();
-      const cursorEndPos = focusedTreeElm.type === 'directory' ? elmNameHandle.textContent.length : elmNameHandle.textContent.split('.')[0].length;
-      range.setStart(
-        elmNameHandle.childNodes[0],
-        cursorEndPos
-      );
+      const cursorEndPos =
+        focusedTreeElm.type === "directory"
+          ? elmNameHandle.textContent.length
+          : elmNameHandle.textContent.split(".")[0].length;
+      range.setStart(elmNameHandle.childNodes[0], cursorEndPos);
       range.collapse(true);
       sel.removeAllRanges();
       sel.addRange(range);
@@ -283,18 +289,25 @@ function handleConextMenu(event) {
       break;
 
     case "DELETE":
+      const path = getFocusedElmPath();
+      const payload = {
+        actionType,
+        deletePath: path,
+      };
+
+      deleteFocusedElementApi(payload);
       break;
 
     default:
       break;
   }
 
-  // fetchContexMenuAction();
+  // renameFocusedElementApi();
 }
 
 //******************** api ************************
 
-async function fetchContexMenuAction(payload) {
+function deleteFocusedElementApi(payload) {
   try {
     fetch("/contexMenuAction", {
       method: "POST",
@@ -305,20 +318,34 @@ async function fetchContexMenuAction(payload) {
     })
       .then((res) => res.json())
       .then((data) => {
-        console.log("data :>> ", data);
+        console.log("deleting response :>> ", data);
       });
   } catch (error) {
-    console.log("error renaming element: ", error?.message);
+    console.log("Error while deleting: ", error?.message);
   } finally {
-    const dirStruct = await getVaultStucture();
-    console.log('dirStruct :>> ', dirStruct);
-    parent.innerHTML = '',
-    generateTreeView(parent, dirStruct);
-    // arun--
+    reRender();
   }
 }
 
-function saveCurrentDocument() {
+async function renameFocusedElementApi(payload) {
+  try {
+    fetch("/contexMenuAction", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+  } catch (error) {
+    console.log("error renaming element: ", error?.message);
+  } finally {
+    const dirStruct = await getVaultStuctureApi();
+    parent.innerHTML = "";
+    generateTreeView(parent, dirStruct);
+  }
+}
+
+function saveCurrentDocumentApi() {
   if (editor.value === "" || currentDocPath === "") {
     return;
   }
@@ -337,7 +364,7 @@ function saveCurrentDocument() {
   renderMarkdown();
 }
 
-function handleCreate() {
+function handleCreateApi() {
   const payload = {
     parentDirPath,
     type: newElementCreationType,
@@ -379,13 +406,13 @@ function handleCreate() {
   }
 }
 
-async function getBaseDirPath() {
+async function getBaseDirPathApi() {
   const path = (await fetch("/getBaseDirPath")).text();
   parentDirPath = path;
   return path;
 }
 
-async function fetchReadDocDataOnFileClick(payload) {
+async function fetchReadDocDataOnFileClickApi(payload) {
   try {
     const response = await fetch("/readDocDataOnFileClick", {
       method: "POST",
@@ -408,7 +435,7 @@ async function fetchReadDocDataOnFileClick(payload) {
   }
 }
 
-async function getVaultStucture() {
+async function getVaultStuctureApi() {
   return new Promise(async (resolve, reject) => {
     try {
       const response = await fetch("/getDirStruct");

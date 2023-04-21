@@ -2,8 +2,10 @@ const router = require("express").Router();
 const { v4: uuidv4 } = require("uuid");
 const path = require("path");
 const fs = require("fs");
-const { getDirectoryStructure, isValidTreeElmName } = require("../utils/fileHandlers");
-
+const {
+  getDirectoryStructure,
+  isValidTreeElmName,
+} = require("../utils/fileHandlers");
 
 router.get("/getDirStruct", (req, res) => {
   const dirStruct = getDirectoryStructure();
@@ -62,6 +64,7 @@ router.post("/contexMenuAction", (req, res) => {
   const pastePath = req.body.pastePath || null;
   const renamePath = req.body.renamePath || null;
   const renamedName = req.body.renamedName || null;
+  const deletePath = req.body.deletePath || null;
 
   switch (actionType) {
     case "RENAME":
@@ -95,12 +98,23 @@ router.post("/contexMenuAction", (req, res) => {
       }
       break;
 
+    case "DELETE":
+      try {
+        if (!deletePath) {
+          throw new Error("Please provide a deletion path.");
+        }
+        fs.rmSync(deletePath, { recursive: true, force: true });
+        res.json({ success: true });
+      } catch (error) {
+        res.json({ success: false, reason: error?.message });
+      }
+      break;
+
     default:
       const dirStruct = getDirectoryStructure();
       res.json({ success: false, dirStruct, reason: "INVALID Action Type." });
       break;
   }
 });
-
 
 module.exports = router;
